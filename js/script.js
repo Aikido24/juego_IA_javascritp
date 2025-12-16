@@ -34,6 +34,67 @@ document.addEventListener("DOMContentLoaded", () => {
   // Velocidad de caída de los enemigos
   const velocidadCaida = 4;
 
+  // Cargar sonidos para las colisiones
+  const sonidoCorrecto = new Audio("sounds/material-gold-394476.mp3");
+  const sonidoIncorrecto = new Audio("sounds/negative_beeps-6008.mp3");
+
+  // Configurar volumen de los sonidos
+  sonidoCorrecto.volume = 0.5;
+  sonidoIncorrecto.volume = 0.5;
+
+  // Cargar música de fondo
+  const musicaFondo = new Audio("sounds/musicbox-23766.mp3");
+  musicaFondo.volume = 0.09; // Volumen muy bajo (6%)
+  musicaFondo.loop = true; // Reproducir en bucle
+
+  // Variable para rastrear si la música ya se inició
+  let musicaIniciada = false;
+
+  // Variable para rastrear si el usuario ya interactuó con la página
+  let usuarioInteractuo = false;
+
+  // Función para iniciar el audio después de la interacción del usuario
+  function iniciarAudioDespuesDeInteraccion() {
+    if (!usuarioInteractuo && !juegoPausado && !musicaIniciada) {
+      musicaFondo
+        .play()
+        .then(() => {
+          musicaIniciada = true;
+        })
+        .catch((e) => {
+          // Silenciar el error, el usuario aún no ha interactuado
+        });
+    }
+  }
+
+  // Detectar la primera interacción del usuario
+  const eventosInteraccion = ["click", "keydown", "touchstart", "mousedown"];
+  eventosInteraccion.forEach((evento) => {
+    document.addEventListener(
+      evento,
+      () => {
+        if (!usuarioInteractuo) {
+          usuarioInteractuo = true;
+          // Iniciar la música después de la primera interacción
+          if (!juegoPausado) {
+            musicaFondo
+              .play()
+              .then(() => {
+                musicaIniciada = true;
+              })
+              .catch((e) => {
+                console.log(
+                  "Error al iniciar música después de interacción:",
+                  e
+                );
+              });
+          }
+        }
+      },
+      { once: true } // Solo ejecutar una vez
+    );
+  });
+
   // Crear el primer enemigo al inicio del juego
   crearEnemigo(1);
 
@@ -265,7 +326,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Verificar si el nivel está completado y pausar el juego
     if (player.score === 10) {
-      juegoPausado = true;
+      if (!juegoPausado) {
+        juegoPausado = true;
+      }
+    }
+
+    // Controlar la música de fondo según el estado del juego
+    if (juegoPausado) {
+      // Si el juego está pausado, FORZAR que la música esté pausada
+      musicaFondo.pause();
+    } else {
+      // Si el juego está activo y el usuario ya interactuó, iniciar o reproducir la música
+      if (usuarioInteractuo) {
+        if (!musicaIniciada) {
+          musicaFondo
+            .play()
+            .then(() => {
+              musicaIniciada = true;
+            })
+            .catch((e) => {
+              // Error silenciado, ya se maneja en el listener de interacción
+            });
+        } else if (musicaFondo.paused) {
+          // Si la música ya se inició pero está pausada, reanudarla
+          musicaFondo.play().catch((e) => {
+            // Error silenciado
+          });
+        }
+      }
     }
 
     // Solo ejecutar la lógica del juego si no está pausado
@@ -290,9 +378,26 @@ document.addEventListener("DOMContentLoaded", () => {
       // Detectar colisiones y actualizar score
       const colisiones = player.detectarColisiones(enemies);
 
-      // Eliminar los enemigos con los que se colisionó
+      // Eliminar los enemigos con los que se colisionó y reproducir sonidos
       if (colisiones.length > 0) {
         colisiones.forEach((enemyColisionado) => {
+          // Reproducir sonido según si el enemigo es correcto o no (solo si el usuario ya interactuó)
+          if (usuarioInteractuo) {
+            if (enemyColisionado.correct) {
+              // Reiniciar y reproducir sonido de éxito
+              sonidoCorrecto.currentTime = 0;
+              sonidoCorrecto.play().catch((e) => {
+                // Error silenciado, el usuario ya interactuó
+              });
+            } else {
+              // Reiniciar y reproducir sonido de error
+              sonidoIncorrecto.currentTime = 0;
+              sonidoIncorrecto.play().catch((e) => {
+                // Error silenciado, el usuario ya interactuó
+              });
+            }
+          }
+
           const index = enemies.indexOf(enemyColisionado);
           if (index > -1) {
             enemies.splice(index, 1);
@@ -318,7 +423,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // Continuar el loop
     requestAnimationFrame(gameLoop);
   }
-
+  if (player.score < 10) {
+    musicaFondo.play();
+  }
   // Iniciar el game loop
   gameLoop();
 });
