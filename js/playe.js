@@ -37,13 +37,16 @@ class Player {
     // Mover el player (velocidad positiva = derecha, negativa = izquierda)
     this.x += velocidad;
 
-    // Limitar el movimiento dentro del canvas
+    // Limitar el movimiento dentro del canvas usando dimensiones visuales
     const anchoPlayer = 80;
+    const canvas = this.ctx.canvas;
+    const visualWidth = canvas.visualWidth || canvas.width;
+
     if (this.x < 0) {
       this.x = 0;
     }
-    if (this.x + anchoPlayer > this.ctx.canvas.width) {
-      this.x = this.ctx.canvas.width - anchoPlayer;
+    if (this.x + anchoPlayer > visualWidth) {
+      this.x = visualWidth - anchoPlayer;
     }
   }
 

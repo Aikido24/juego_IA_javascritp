@@ -1,18 +1,57 @@
-// Esperar a que el DOM esté completamente cargado
-document.addEventListener("DOMContentLoaded", () => {
+// Variable global para controlar si el juego ya está inicializado
+let juegoInicializado = false;
+let gameLoopId = null;
+
+// Función para inicializar el juego
+function inicializarJuegoCanvas() {
+  // Si ya está inicializado, no hacer nada
+  if (juegoInicializado) {
+    return;
+  }
+
   // Obtener referencia al canvas
   const canvas = document.getElementById("gameCanvas");
+  if (!canvas) {
+    console.warn("Canvas no encontrado, esperando...");
+    return;
+  }
+
+  // Verificar si el canvas está visible
+  const gameContainer = document.getElementById("gameContainer");
+  if (gameContainer && gameContainer.style.display === "none") {
+    // El canvas no está visible, esperar a que se muestre
+    return;
+  }
+
+  // Configurar el tamaño del canvas para ocupar todo el espacio disponible
+  const containerWidth = gameContainer ? gameContainer.clientWidth : 375;
+  const containerHeight = gameContainer ? gameContainer.clientHeight : 667;
+
+  // Usar todo el espacio del contenedor
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = containerWidth * dpr;
+  canvas.height = containerHeight * dpr;
 
   // Obtener el contexto 2D para dibujar
   const ctx = canvas.getContext("2d");
+  ctx.scale(dpr, dpr);
 
-  // Configurar el tamaño del canvas para que coincida con el CSS
-  canvas.width = 375;
-  canvas.height = 667;
+  // Establecer estilos CSS
+  canvas.style.width = containerWidth + "px";
+  canvas.style.height = containerHeight + "px";
+
+  // Usar las dimensiones visuales (sin dpr) para las coordenadas del juego
+  // Estas son las dimensiones que se usan para posicionar objetos
+  const canvasWidth = containerWidth;
+  const canvasHeight = containerHeight;
+
+  // Guardar las dimensiones visuales en el canvas para acceso global
+  canvas.visualWidth = canvasWidth;
+  canvas.visualHeight = canvasHeight;
 
   // Crear el player en la parte inferior del canvas, centrado horizontalmente
-  const playerX = canvas.width / 2 - 40; // Centrado (80px de ancho / 2)
-  const playerY = canvas.height - 90; // Parte inferior con un poco de margen
+  const playerX = canvasWidth / 2 - 40; // Centrado (80px de ancho / 2)
+  const playerY = canvasHeight - 90; // Parte inferior con un poco de margen
   const player = new Player(playerX, playerY, ctx);
 
   // Array para almacenar los enemigos
@@ -141,8 +180,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const maxIntentos = 100; // Límite de intentos para evitar bucle infinito
 
       // Buscar una posición X e Y que no esté ocupada
+      // Usar dimensiones visuales del canvas
+      const visualWidth = canvas.visualWidth || canvas.width;
+      const visualHeight = canvas.visualHeight || canvas.height;
       do {
-        xAleatorio = Math.random() * (canvas.width - 120);
+        xAleatorio = Math.random() * (visualWidth - 120);
         // Posición Y fuera de la pantalla (arriba, negativo o muy arriba)
         yAleatorio = -200 - Math.random() * 100;
         intentos++;
@@ -181,11 +223,13 @@ document.addEventListener("DOMContentLoaded", () => {
     crearEnemigo(1);
   }
 
-  // Obtener el botón y agregar el event listener
+  // Obtener el botón y agregar el event listener (si existe)
   const btnGenerarEnemigos = document.getElementById("btnGenerarEnemigos");
-  btnGenerarEnemigos.addEventListener("click", () => {
-    generarEnemigosAleatorios(5); // Genera entre 1 y 5 enemigos
-  });
+  if (btnGenerarEnemigos) {
+    btnGenerarEnemigos.addEventListener("click", () => {
+      generarEnemigosAleatorios(5); // Genera entre 1 y 5 enemigos
+    });
+  }
 
   // Objeto para rastrear las teclas presionadas
   const keys = {
@@ -222,9 +266,10 @@ document.addEventListener("DOMContentLoaded", () => {
     let enemigosEliminados = 0;
 
     // Filtrar y mantener solo los enemigos que aún están en pantalla o arriba
-    // Un enemigo sale de pantalla cuando su Y es mayor que canvas.height
+    // Usar dimensiones visuales del canvas
+    const visualHeight = canvas.visualHeight || canvas.height;
     const enemigosVisibles = enemies.filter((enemy) => {
-      const estaEnPantalla = enemy.y <= canvas.height + altoEnemigo;
+      const estaEnPantalla = enemy.y <= visualHeight + altoEnemigo;
       if (!estaEnPantalla) {
         enemigosEliminados++;
       }
@@ -256,14 +301,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Función para dibujar el fondo con degradado
   function dibujarFondo() {
+    // Usar dimensiones visuales del canvas
+    const visualWidth = canvas.visualWidth || canvas.width;
+    const visualHeight = canvas.visualHeight || canvas.height;
+
     // Crear un gradiente lineal desde arriba hacia abajo
-    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    const gradient = ctx.createLinearGradient(0, 0, 0, visualHeight);
     gradient.addColorStop(0, "#fdd42e"); // Color inicial (arriba)
     gradient.addColorStop(1, "#b89814"); // Color final (abajo)
 
     // Dibujar el degradado en todo el canvas
     ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, visualWidth, visualHeight);
   }
 
   // Función para dibujar el score del player
@@ -278,9 +327,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // Función para dibujar el mensaje de nivel completado
   function dibujarNivelCompletado() {
     if (player.score === 10) {
+      // Usar dimensiones visuales del canvas
+      const visualWidth = canvas.visualWidth || canvas.width;
+      const visualHeight = canvas.visualHeight || canvas.height;
+
       // Calcular el tamaño del texto basado en el ancho del canvas
       // Usar aproximadamente 12% del ancho del canvas para el tamaño de fuente
-      const tamanoFuente = Math.min(canvas.width * 0.12, 40);
+      const tamanoFuente = Math.min(visualWidth * 0.12, 40);
       const texto = "Nivel Completado";
 
       // Configurar el estilo del texto
@@ -296,8 +349,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Dibujar fondo semitransparente para mejor visibilidad
       ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
-      const fondoX = canvas.width / 2 - anchoTexto / 2 - padding;
-      const fondoY = canvas.height / 2 - altoTexto / 2 - padding;
+      const fondoX = visualWidth / 2 - anchoTexto / 2 - padding;
+      const fondoY = visualHeight / 2 - altoTexto / 2 - padding;
       const fondoAncho = anchoTexto + padding * 2;
       const fondoAlto = altoTexto + padding * 2;
       ctx.fillRect(fondoX, fondoY, fondoAncho, fondoAlto);
@@ -310,7 +363,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Dibujar el texto en el centro del canvas
       ctx.fillStyle = "white";
-      ctx.fillText(texto, canvas.width / 2, canvas.height / 2);
+      ctx.fillText(texto, visualWidth / 2, visualHeight / 2);
 
       // Restaurar sombra
       ctx.shadowBlur = 0;
@@ -423,9 +476,20 @@ document.addEventListener("DOMContentLoaded", () => {
     // Continuar el loop
     requestAnimationFrame(gameLoop);
   }
-  if (player.score < 10) {
-    musicaFondo.play();
-  }
+
   // Iniciar el game loop
   gameLoop();
+  juegoInicializado = true;
+}
+
+// Esperar a que el DOM esté completamente cargado
+document.addEventListener("DOMContentLoaded", () => {
+  // Intentar inicializar el juego después de un pequeño delay
+  // para asegurar que todos los elementos estén listos
+  setTimeout(() => {
+    inicializarJuegoCanvas();
+  }, 100);
 });
+
+// Exportar la función para que pueda ser llamada desde ChatAcompanamiento.html
+window.inicializarJuegoCanvas = inicializarJuegoCanvas;

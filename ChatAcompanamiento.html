@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#FDB714" />
+    <title>Prosperidad Social - Acompañamiento</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      html,
+      body {
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+        position: fixed;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, sans-serif;
+        background: #1a1a2e;
+      }
+
+      .app-container {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: stretch;
+        height: 100vh;
+        height: 100dvh;
+        width: 100%;
+        gap: 0;
+        padding: 20px;
+      }
+
+      /* ============================================ */
+      /* CHAT AREA - Estilo Celular */
+      /* ============================================ */
+      .chat-area {
+        width: 400px;
+        max-width: 400px;
+        min-width: 320px;
+        display: flex;
+        flex-direction: column;
+        background: white;
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      }
+
+      /* Header */
+      .header {
+        background: linear-gradient(135deg, #fdb714 0%, #e87722 100%);
+        color: white;
+        padding: 16px;
+        flex-shrink: 0;
+      }
+
+      .header-title-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+      }
+
+      .header-text h1 {
+        font-size: 16px;
+        font-weight: 600;
+      }
+
+      .header-text p {
+        font-size: 11px;
+        opacity: 0.9;
+      }
+
+      .header-buttons {
+        display: flex;
+        gap: 6px;
+      }
+
+      .header-action-btn {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: 2px solid rgba(255, 255, 255, 0.4);
+        padding: 6px 10px;
+        border-radius: 16px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        transition: all 0.2s;
+        backdrop-filter: blur(10px);
+      }
+
+      .header-action-btn:active {
+        transform: scale(0.95);
+        background: rgba(255, 255, 255, 0.3);
+      }
+
+      .header-action-btn.danger {
+        border-color: rgba(255, 100, 100, 0.6);
+        background: rgba(255, 100, 100, 0.2);
+      }
+
+      /* Botón de progreso - solo visible en móvil */
+      .header-action-btn.progress-btn {
+        display: none;
+        border-color: rgba(255, 255, 255, 0.6);
+        background: rgba(255, 255, 255, 0.25);
+      }
+
+      /* Session ID Input */
+      .session-container {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(255, 255, 255, 0.15);
+        padding: 6px 10px;
+        border-radius: 10px;
+        backdrop-filter: blur(10px);
+      }
+
+      .session-icon {
+        font-size: 14px;
+      }
+
+      .session-label {
+        font-size: 11px;
+        font-weight: 600;
+        opacity: 0.9;
+      }
+
+      .session-input {
+        flex: 1;
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 6px;
+        padding: 5px 8px;
+        font-size: 11px;
+        font-family: monospace;
+        color: white;
+        outline: none;
+        transition: all 0.2s;
+        min-width: 0;
+      }
+
+      .session-input::placeholder {
+        color: rgba(255, 255, 255, 0.6);
+      }
+
+      .session-input:focus {
+        background: rgba(255, 255, 255, 0.3);
+        border-color: rgba(255, 255, 255, 0.5);
+      }
+
+      .session-btn {
+        background: rgba(255, 255, 255, 0.25);
+        border: none;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+      }
+
+      .session-btn:active {
+        transform: scale(0.95);
+        background: rgba(255, 255, 255, 0.35);
+      }
+
+      .session-btn.generate {
+        padding: 5px 8px;
+      }
+
+      /* Chat Container */
+      .chat-container {
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+        background: #f5f5f5;
+        -webkit-overflow-scrolling: touch;
+        min-height: 0;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .chat-container::-webkit-scrollbar {
+        width: 3px;
+      }
+
+      .chat-container::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      .chat-container::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 2px;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Messages */
+      .message {
+        max-width: 85%;
+        padding: 10px 14px;
+        border-radius: 16px;
+        line-height: 1.4;
+        font-size: 14px;
+        animation: fadeIn 0.3s ease-out;
+        word-wrap: break-word;
+      }
+
+      .message.user {
+        background: linear-gradient(135deg, #fdb714 0%, #e87722 100%);
+        color: white;
+        align-self: flex-end;
+        border-bottom-right-radius: 4px;
+        box-shadow: 0 2px 8px rgba(253, 183, 20, 0.3);
+      }
+
+      .message.assistant {
+        background: white;
+        color: #333;
+        align-self: flex-start;
+        border-bottom-left-radius: 4px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      .message.loading {
+        background: white;
+        color: #999;
+        align-self: flex-start;
+        border-bottom-left-radius: 4px;
+      }
+
+      .typing-indicator {
+        display: flex;
+        gap: 4px;
+        padding: 4px 0;
+      }
+
+      .typing-indicator span {
+        width: 7px;
+        height: 7px;
+        background: #fdb714;
+        border-radius: 50%;
+        animation: bounce 1.4s infinite ease-in-out;
+      }
+
+      .typing-indicator span:nth-child(1) {
+        animation-delay: 0s;
+      }
+      .typing-indicator span:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .typing-indicator span:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+
+      @keyframes bounce {
+        0%,
+        80%,
+        100% {
+          transform: scale(0.6);
+          opacity: 0.5;
+        }
+        40% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      /* Input Area */
+      .input-container {
+        display: flex;
+        align-items: flex-end;
+        gap: 10px;
+        padding: 12px 16px;
+        background: white;
+        border-top: 1px solid #eee;
+        flex-shrink: 0;
+      }
+
+      .input-wrapper {
+        flex: 1;
+        background: #f5f5f5;
+        border-radius: 20px;
+        padding: 10px 16px;
+        display: flex;
+        align-items: center;
+      }
+
+      .chat-input {
+        flex: 1;
+        border: none;
+        outline: none;
+        font-size: 15px;
+        background: transparent;
+        resize: none;
+        max-height: 100px;
+        line-height: 1.4;
+        font-family: inherit;
+      }
+
+      .chat-input::placeholder {
+        color: #999;
+      }
+
+      .send-button {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #fdb714 0%, #e87722 100%);
+        color: white;
+        border: none;
+        font-size: 18px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        flex-shrink: 0;
+      }
+
+      .send-button:active {
+        transform: scale(0.95);
+      }
+
+      .send-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      /* ============================================ */
+      /* GAME CONTAINER */
+      /* ============================================ */
+      .game-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: stretch;
+        padding: 0;
+        background: #f5f5f5;
+        overflow: hidden;
+        position: relative;
+        width: 100%;
+        height: 100%;
+      }
+
+      #gameCanvas {
+        width: 100%;
+        height: 100%;
+        background-color: black;
+        display: block;
+        border-radius: 0;
+        box-shadow: none;
+        object-fit: cover;
+      }
+
+      #btnGenerarEnemigos {
+        display: none !important;
+      }
+
+      /* Toast */
+      .toast {
+        position: fixed;
+        bottom: 100px;
+        left: 50%;
+        transform: translateX(-50%) translateY(100px);
+        background: #333;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 13px;
+        opacity: 0;
+        transition: all 0.3s;
+        z-index: 1000;
+        max-width: 90%;
+        text-align: center;
+      }
+
+      .toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+
+      .toast.error {
+        background: #e74c3c;
+      }
+      .toast.success {
+        background: #27ae60;
+      }
+
+      /* ============================================ */
+      /* PANEL DE PROGRESO */
+      /* ============================================ */
+      .progress-panel {
+        width: 380px;
+        max-width: 380px;
+        min-width: 320px;
+        background: #f8f9fa;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border-radius: 24px;
+        margin-left: 20px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      }
+
+      .progress-header {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        color: white;
+        padding: 16px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .progress-header-text h2 {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 2px;
+      }
+
+      .progress-header-text p {
+        font-size: 11px;
+        opacity: 0.8;
+      }
+
+      /* Botón volver al chat - solo visible en móvil */
+      .back-to-chat-btn {
+        display: none;
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: 2px solid rgba(255, 255, 255, 0.4);
+        padding: 6px 12px;
+        border-radius: 16px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .back-to-chat-btn:active {
+        transform: scale(0.95);
+        background: rgba(255, 255, 255, 0.3);
+      }
+
+      /* Módulos Progress */
+      .modulos-container {
+        padding: 14px;
+        background: white;
+        border-bottom: 1px solid #e0e0e0;
+        flex-shrink: 0;
+      }
+
+      .modulos-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 10px;
+      }
+
+      .modulo-item {
+        margin-bottom: 10px;
+      }
+
+      .modulo-item:last-child {
+        margin-bottom: 0;
+      }
+
+      .modulo-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 4px;
+      }
+
+      .modulo-name {
+        font-size: 12px;
+        font-weight: 500;
+        color: #555;
+      }
+
+      .modulo-percent {
+        font-size: 12px;
+        font-weight: 600;
+        color: #fdb714;
+      }
+
+      .modulo-bar {
+        height: 6px;
+        background: #e0e0e0;
+        border-radius: 3px;
+        overflow: hidden;
+      }
+
+      .modulo-bar-fill {
+        height: 100%;
+        background: linear-gradient(135deg, #fdb714 0%, #e87722 100%);
+        border-radius: 3px;
+        transition: width 0.5s ease;
+      }
+
+      /* Conceptos List */
+      .conceptos-container {
+        flex: 1;
+        overflow-y: auto;
+        padding: 14px;
+      }
+
+      .conceptos-container::-webkit-scrollbar {
+        width: 3px;
+      }
+
+      .conceptos-container::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 2px;
+      }
+
+      .conceptos-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 10px;
+        position: sticky;
+        top: 0;
+        background: #f8f9fa;
+        padding-bottom: 6px;
+      }
+
+      .modulo-section {
+        margin-bottom: 16px;
+      }
+
+      .modulo-section-title {
+        font-size: 12px;
+        font-weight: 600;
+        color: #fdb714;
+        margin-bottom: 8px;
+        padding: 5px 8px;
+        background: rgba(253, 183, 20, 0.1);
+        border-radius: 6px;
+      }
+
+      .concepto-item {
+        display: flex;
+        align-items: flex-start;
+        padding: 8px 10px;
+        background: white;
+        border-radius: 8px;
+        margin-bottom: 6px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        gap: 8px;
+      }
+
+      .concepto-status-icon {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+
+      .concepto-status-icon.no-evaluado {
+        background: #e0e0e0;
+        color: #999;
+      }
+
+      .concepto-status-icon.aprobado {
+        background: #27ae60;
+        color: white;
+      }
+
+      .concepto-status-icon.en-proceso {
+        background: #f39c12;
+        color: white;
+      }
+
+      .concepto-status-icon.reprobado {
+        background: #e74c3c;
+        color: white;
+      }
+
+      .concepto-info {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .concepto-name {
+        font-size: 12px;
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 1px;
+      }
+
+      .concepto-estado {
+        font-size: 10px;
+        color: #888;
+      }
+
+      .concepto-evidencia {
+        font-size: 10px;
+        color: #27ae60;
+        margin-top: 3px;
+        font-style: italic;
+        display: none;
+      }
+
+      .concepto-evidencia.has-evidencia {
+        display: block;
+      }
+
+      .progress-loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 30px;
+        color: #888;
+        font-size: 13px;
+      }
+
+      /* ============================================ */
+      /* RESPONSIVE - MÓVIL (pantallas < 850px) */
+      /* ============================================ */
+      @media (max-width: 850px) {
+        .app-container {
+          padding: 0;
+        }
+
+        .chat-area {
+          width: 100%;
+          max-width: 100%;
+          min-width: 100%;
+          border-radius: 0;
+          box-shadow: none;
+        }
+
+        .progress-panel {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          width: 100%;
+          max-width: 100%;
+          min-width: 100%;
+          margin-left: 0;
+          border-radius: 0;
+          box-shadow: none;
+          z-index: 100;
+          display: none;
+        }
+
+        .progress-panel.visible {
+          display: flex;
+        }
+
+        /* Mostrar botón de progreso en header del chat */
+        .header-action-btn.progress-btn {
+          display: flex;
+        }
+
+        /* Mostrar botón de volver al chat */
+        .back-to-chat-btn {
+          display: flex;
+        }
+      }
+
+      /* Desktop - ambos paneles visibles lado a lado */
+      @media (min-width: 851px) {
+        .progress-panel {
+          display: flex;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-container">
+      <!-- Chat Area -->
+      <div class="chat-area" id="chatArea">
+        <header class="header">
+          <div class="header-title-row">
+            <div class="header-text">
+              <h1>🤝 Acompañamiento</h1>
+              <p>Asistente de formación empresarial</p>
+            </div>
+            <div class="header-buttons">
+              <button
+                class="header-action-btn game-btn"
+                id="toggleGameBtn"
+                onclick="alternarJuego()">
+                🎮 Jugar
+              </button>
+              <button
+                class="header-action-btn progress-btn"
+                onclick="mostrarProgreso()">
+                📊 Progreso
+              </button>
+              <button class="header-action-btn danger" onclick="limpiarChat()">
+                🗑️
+              </button>
+            </div>
+          </div>
+
+          <div class="session-container">
+            <span class="session-icon">🔑</span>
+            <span class="session-label">ID:</span>
+            <input
+              type="text"
+              class="session-input"
+              id="sessionInput"
+              placeholder="Session ID..." />
+            <button class="session-btn generate" onclick="generarSessionId()">
+              🎲
+            </button>
+            <button class="session-btn" onclick="aplicarSessionId()">
+              Aplicar
+            </button>
+          </div>
+        </header>
+
+        <div class="chat-container" id="chatContainer">
+          <!-- Messages will appear here -->
+        </div>
+
+        <!-- Game Container -->
+        <div class="game-container" id="gameContainer" style="display: none">
+          <canvas id="gameCanvas"></canvas>
+          <button id="btnGenerarEnemigos" style="display: none">
+            Generar Enemigos
+          </button>
+        </div>
+
+        <div class="input-container">
+          <div class="input-wrapper">
+            <textarea
+              class="chat-input"
+              id="chatInput"
+              placeholder="Escribe tu mensaje..."
+              rows="1"
+              onkeydown="handleKeyDown(event)"
+              oninput="autoResize(this)"></textarea>
+          </div>
+          <button class="send-button" id="sendButton" onclick="enviarMensaje()">
+            ➤
+          </button>
+        </div>
+      </div>
+
+      <!-- Progress Panel -->
+      <aside class="progress-panel" id="progressPanel">
+        <div class="progress-header">
+          <div class="progress-header-text">
+            <h2>📊 Progreso de Evaluación</h2>
+            <p>Seguimiento de conceptos aprendidos</p>
+          </div>
+          <button class="back-to-chat-btn" onclick="mostrarChat()">
+            💬 Volver al Chat
+          </button>
+        </div>
+
+        <div class="modulos-container">
+          <div class="modulos-title">Avance por Módulo</div>
+          <div id="modulosList">
+            <div class="progress-loading">Esperando datos...</div>
+          </div>
+        </div>
+
+        <div class="conceptos-container">
+          <div class="conceptos-title">Conceptos Evaluados</div>
+          <div id="conceptosList">
+            <div class="progress-loading">
+              Inicia una conversación para ver el progreso
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+      // ============================================
+      // CONFIGURACIÓN
+      // ============================================
+      const CONFIG = {
+        API_URL_CHAT:
+          "https://giro.prosperidadsocial.gov.co/api/v1/run/5594e748-bfc0-4bdc-93c8-c53163b1b104",
+        API_URL_PROGRESS:
+          "https://giro.prosperidadsocial.gov.co/api/v1/run/4e6c25ca-7873-431f-8575-64f7ba765c65",
+        API_KEY: "sk-CbmhWsnhwBFkUw_uR-X13143X7G8Gun9t1PMb9i-xJk",
+      };
+
+      // ============================================
+      // GESTIÓN DE SESSION ID
+      // ============================================
+      let SESSION_ID = localStorage.getItem("acompanamiento_session_id") || "";
+
+      function generateUUID() {
+        return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+          /[xy]/g,
+          function (c) {
+            const r = (Math.random() * 16) | 0;
+            const v = c === "x" ? r : (r & 0x3) | 0x8;
+            return v.toString(16);
+          }
+        );
+      }
+
+      function generarSessionId() {
+        const nuevoId = generateUUID();
+        document.getElementById("sessionInput").value = nuevoId;
+        mostrarToast('ID generado. Presiona "Aplicar" para usarlo.', "success");
+      }
+
+      function aplicarSessionId() {
+        const input = document.getElementById("sessionInput");
+        const nuevoId = input.value.trim();
+
+        if (!nuevoId) {
+          mostrarToast("Ingresa un Session ID válido", "error");
+          return;
+        }
+
+        SESSION_ID = nuevoId;
+        localStorage.setItem("acompanamiento_session_id", SESSION_ID);
+        mostrarToast(`Session ID aplicado`, "success");
+        console.log("✅ Session ID actualizado:", SESSION_ID);
+
+        obtenerProgreso();
+      }
+
+      // ============================================
+      // INICIALIZACIÓN
+      // ============================================
+      function inicializar() {
+        const input = document.getElementById("sessionInput");
+
+        if (SESSION_ID) {
+          input.value = SESSION_ID;
+        } else {
+          SESSION_ID = generateUUID();
+          input.value = SESSION_ID;
+          localStorage.setItem("acompanamiento_session_id", SESSION_ID);
+        }
+
+        document.getElementById("chatInput").focus();
+        console.log("✅ Chat inicializado");
+        console.log("📋 Session ID:", SESSION_ID);
+
+        obtenerProgreso();
+      }
+
+      // ============================================
+      // NAVEGACIÓN CHAT ↔ PROGRESO (MÓVIL)
+      // ============================================
+      function mostrarProgreso() {
+        document.getElementById("progressPanel").classList.add("visible");
+      }
+
+      function mostrarChat() {
+        document.getElementById("progressPanel").classList.remove("visible");
+      }
+
+      // ============================================
+      // LIMPIAR CHAT
+      // ============================================
+      function limpiarChat() {
+        if (!confirm("¿Limpiar el historial del chat?")) {
+          return;
+        }
+        document.getElementById("chatContainer").innerHTML = "";
+        mostrarToast("Chat limpiado", "success");
+      }
+
+      // ============================================
+      // ENVÍO DE MENSAJES A LANGFLOW (CHAT)
+      // ============================================
+      async function enviarALangFlow(mensaje) {
+        if (!SESSION_ID) {
+          throw new Error("No hay Session ID configurado");
+        }
+
+        const payload = {
+          output_type: "chat",
+          input_type: "chat",
+          input_value: mensaje,
+          session_id: SESSION_ID,
+          tweaks: { session_id: SESSION_ID },
+        };
+
+        const headers = { "Content-Type": "application/json" };
+        if (CONFIG.API_KEY) headers["x-api-key"] = CONFIG.API_KEY;
+
+        console.log("📤 Enviando:", { mensaje, session_id: SESSION_ID });
+
+        const response = await fetch(CONFIG.API_URL_CHAT, {
+          method: "POST",
+          headers: headers,
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log("📥 Respuesta:", data);
+
+        const textoRespuesta =
+          data.outputs?.[0]?.outputs?.[0]?.results?.message?.text ||
+          data.outputs?.[0]?.outputs?.[0]?.messages?.[0]?.message ||
+          data.outputs?.[0]?.outputs?.[0]?.artifacts?.message ||
+          data.outputs?.[0]?.outputs?.[0]?.results?.text ||
+          (typeof data.outputs?.[0]?.outputs?.[0]?.results === "string"
+            ? data.outputs[0].outputs[0].results
+            : null) ||
+          "No pude procesar la respuesta.";
+
+        return textoRespuesta;
+      }
+
+      // ============================================
+      // OBTENER PROGRESO DEL SEGUNDO FLUJO
+      // ============================================
+      async function obtenerProgreso() {
+        if (!SESSION_ID) return;
+
+        const payload = {
+          output_type: "chat",
+          input_type: "chat",
+          input_value: " ",
+          session_id: SESSION_ID,
+          tweaks: { session_id: SESSION_ID },
+        };
+
+        const headers = { "Content-Type": "application/json" };
+        if (CONFIG.API_KEY) headers["x-api-key"] = CONFIG.API_KEY;
+
+        console.log("📤 Solicitando progreso...");
+
+        try {
+          const response = await fetch(CONFIG.API_URL_PROGRESS, {
+            method: "POST",
+            headers: headers,
+            body: JSON.stringify(payload),
+          });
+
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+          const data = await response.json();
+          console.log("📥 Progreso:", data);
+
+          const textoRespuesta =
+            data.outputs?.[0]?.outputs?.[0]?.results?.message?.text ||
+            data.outputs?.[0]?.outputs?.[0]?.messages?.[0]?.message ||
+            data.outputs?.[0]?.outputs?.[0]?.artifacts?.message ||
+            data.outputs?.[0]?.outputs?.[0]?.results?.text ||
+            (typeof data.outputs?.[0]?.outputs?.[0]?.results === "string"
+              ? data.outputs[0].outputs[0].results
+              : null);
+
+          if (textoRespuesta) {
+            try {
+              const jsonMatch = textoRespuesta.match(/\{[\s\S]*\}/);
+              if (jsonMatch) {
+                const progressData = JSON.parse(jsonMatch[0]);
+                renderizarProgreso(progressData);
+              }
+            } catch (e) {
+              console.error("Error parseando JSON:", e);
+            }
+          }
+        } catch (error) {
+          console.error("❌ Error progreso:", error);
+        }
+      }
+
+      // ============================================
+      // RENDERIZAR PROGRESO
+      // ============================================
+      function renderizarProgreso(data) {
+        if (data.modulos) renderizarModulos(data.modulos);
+        if (data.evaluacion) renderizarConceptos(data.evaluacion);
+      }
+
+      function renderizarModulos(modulos) {
+        const container = document.getElementById("modulosList");
+        let html = "";
+
+        for (const [nombre, porcentaje] of Object.entries(modulos)) {
+          const valor = parseInt(porcentaje) || 0;
+          const nombreFormateado = nombre.replace("Modulo", "Módulo ");
+
+          html += `
+                    <div class="modulo-item">
+                        <div class="modulo-header">
+                            <span class="modulo-name">${nombreFormateado}</span>
+                            <span class="modulo-percent">${porcentaje}</span>
+                        </div>
+                        <div class="modulo-bar">
+                            <div class="modulo-bar-fill" style="width: ${valor}%"></div>
+                        </div>
+                    </div>
+                `;
+        }
+
+        container.innerHTML = html;
+      }
+
+      function renderizarConceptos(evaluacion) {
+        const container = document.getElementById("conceptosList");
+        const porModulo = {};
+
+        evaluacion.forEach((item) => {
+          const modulo = item.modulo || "Sin módulo";
+          if (!porModulo[modulo]) porModulo[modulo] = [];
+          porModulo[modulo].push(item);
+        });
+
+        let html = "";
+        const modulosOrdenados = Object.keys(porModulo).sort();
+
+        for (const modulo of modulosOrdenados) {
+          const conceptos = porModulo[modulo];
+          html += `<div class="modulo-section"><div class="modulo-section-title">Módulo ${modulo}</div>`;
+
+          for (const c of conceptos) {
+            const estadoClass = getEstadoClass(c.estado);
+            const estadoIcon = getEstadoIcon(c.estado);
+            const tieneEvidencia = c.evidencia && c.evidencia.trim() !== "";
+
+            html += `
+                        <div class="concepto-item">
+                            <div class="concepto-status-icon ${estadoClass}">${estadoIcon}</div>
+                            <div class="concepto-info">
+                                <div class="concepto-name">${c.concepto}</div>
+                                <div class="concepto-estado">${c.estado}</div>
+                                <div class="concepto-evidencia ${
+                                  tieneEvidencia ? "has-evidencia" : ""
+                                }">📝 ${c.evidencia || ""}</div>
+                            </div>
+                        </div>
+                    `;
+          }
+          html += "</div>";
+        }
+
+        container.innerHTML =
+          html || '<div class="progress-loading">No hay conceptos</div>';
+      }
+
+      function getEstadoClass(estado) {
+        const e = (estado || "").toLowerCase();
+        if (e.includes("aprobado")) return "aprobado";
+        if (e.includes("proceso")) return "en-proceso";
+        if (e.includes("reprobado")) return "reprobado";
+        return "no-evaluado";
+      }
+
+      function getEstadoIcon(estado) {
+        const e = (estado || "").toLowerCase();
+        if (e.includes("aprobado")) return "✓";
+        if (e.includes("proceso")) return "◐";
+        if (e.includes("reprobado")) return "✗";
+        return "○";
+      }
+
+      // ============================================
+      // UI: MENSAJES
+      // ============================================
+      function agregarMensaje(texto, tipo) {
+        const container = document.getElementById("chatContainer");
+        const messageDiv = document.createElement("div");
+        messageDiv.className = `message ${tipo}`;
+
+        if (tipo === "loading") {
+          messageDiv.innerHTML = `<div class="typing-indicator"><span></span><span></span><span></span></div>`;
+        } else {
+          messageDiv.innerHTML = formatearTexto(texto);
+        }
+
+        container.appendChild(messageDiv);
+        container.scrollTop = container.scrollHeight;
+        return messageDiv;
+      }
+
+      function formatearTexto(texto) {
+        return texto
+          .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+          .replace(/\*(.*?)\*/g, "<em>$1</em>")
+          .replace(/`(.*?)`/g, "<code>$1</code>")
+          .replace(/\n/g, "<br>");
+      }
+
+      // ============================================
+      // ENVIAR MENSAJE
+      // ============================================
+      async function enviarMensaje() {
+        const input = document.getElementById("chatInput");
+        const sendBtn = document.getElementById("sendButton");
+        const texto = input.value.trim();
+
+        if (!texto) return;
+        if (!SESSION_ID) {
+          mostrarToast("Configura un Session ID", "error");
+          return;
+        }
+
+        input.value = "";
+        input.style.height = "auto";
+        sendBtn.disabled = true;
+
+        agregarMensaje(texto, "user");
+        const loadingMsg = agregarMensaje("", "loading");
+
+        try {
+          // 1. Enviar al chat principal
+          const respuesta = await enviarALangFlow(texto);
+          loadingMsg.remove();
+          agregarMensaje(respuesta, "assistant");
+
+          // 2. Obtener progreso actualizado automáticamente
+          await obtenerProgreso();
+        } catch (error) {
+          console.error("❌ Error:", error);
+          loadingMsg.remove();
+          mostrarToast("Error de conexión", "error");
+        }
+
+        sendBtn.disabled = false;
+        input.focus();
+      }
+
+      // ============================================
+      // GAME TOGGLE FUNCTIONS
+      // ============================================
+      let juegoActivo = false;
+      let gameInitialized = false;
+
+      function alternarJuego() {
+        const chatContainer = document.getElementById("chatContainer");
+        const gameContainer = document.getElementById("gameContainer");
+        const inputContainer = document.querySelector(".input-container");
+        const toggleBtn = document.getElementById("toggleGameBtn");
+
+        if (!juegoActivo) {
+          // Mostrar juego, ocultar chat
+          chatContainer.style.display = "none";
+          gameContainer.style.display = "flex";
+          inputContainer.style.display = "none";
+          toggleBtn.textContent = "💬 Chat";
+          juegoActivo = true;
+
+          // Inicializar el juego si no se ha hecho
+          setTimeout(() => {
+            if (window.inicializarJuegoCanvas && !gameInitialized) {
+              window.inicializarJuegoCanvas();
+              gameInitialized = true;
+            }
+            redimensionarCanvas();
+          }, 100);
+        } else {
+          // Mostrar chat, ocultar juego
+          chatContainer.style.display = "flex";
+          gameContainer.style.display = "none";
+          inputContainer.style.display = "flex";
+          toggleBtn.textContent = "🎮 Jugar";
+          juegoActivo = false;
+        }
+      }
+
+      function redimensionarCanvas() {
+        const canvas = document.getElementById("gameCanvas");
+        const gameContainer = document.getElementById("gameContainer");
+
+        if (canvas && gameContainer && gameContainer.style.display !== "none") {
+          // Usar todo el espacio disponible del contenedor
+          const containerWidth = gameContainer.clientWidth;
+          const containerHeight = gameContainer.clientHeight;
+
+          // Actualizar el tamaño del canvas para ocupar todo el espacio
+          const dpr = window.devicePixelRatio || 1;
+          canvas.width = containerWidth * dpr;
+          canvas.height = containerHeight * dpr;
+
+          const ctx = canvas.getContext("2d");
+          ctx.scale(dpr, dpr);
+
+          // Guardar dimensiones visuales para uso en el juego
+          canvas.visualWidth = containerWidth;
+          canvas.visualHeight = containerHeight;
+
+          // Actualizar estilos CSS para ocupar todo el espacio
+          canvas.style.width = containerWidth + "px";
+          canvas.style.height = containerHeight + "px";
+        }
+      }
+
+      // Redimensionar canvas cuando se cambia el tamaño de la ventana
+      window.addEventListener("resize", () => {
+        if (juegoActivo) {
+          redimensionarCanvas();
+        }
+      });
+
+      // ============================================
+      // HELPERS
+      // ============================================
+      function handleKeyDown(event) {
+        if (event.key === "Enter" && !event.shiftKey) {
+          event.preventDefault();
+          enviarMensaje();
+        }
+      }
+
+      function autoResize(textarea) {
+        textarea.style.height = "auto";
+        textarea.style.height = Math.min(textarea.scrollHeight, 100) + "px";
+      }
+
+      function mostrarToast(mensaje, tipo = "success") {
+        const toast = document.getElementById("toast");
+        toast.textContent = mensaje;
+        toast.className = `toast ${tipo} show`;
+        setTimeout(() => toast.classList.remove("show"), 3000);
+      }
+
+      // ============================================
+      // INICIAR
+      // ============================================
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", inicializar);
+      } else {
+        inicializar();
+      }
+    </script>
+
+    <!-- Game Scripts -->
+    <script src="js/playe.js"></script>
+    <script src="js/enemy.js"></script>
+    <script src="js/script.js"></script>
+  </body>
+</html>
